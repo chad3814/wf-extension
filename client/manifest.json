@@ -1,0 +1,22 @@
+{
+    "name": "wf-util",
+    "manifest_version": 2,
+    "version": "0.1",
+
+    "description": "An extension to help with Warfish",
+    "icons": {
+        "132": "wf-icon.png"
+    },
+    "page_action": {
+        "default_icon": {
+            "132": "wf-icon.png"
+        },
+        "default_title": "Warfish Util",
+        "default_popup": "popup.html"
+    },
+
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    }
+}
