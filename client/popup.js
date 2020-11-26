@@ -1,6 +1,6 @@
 const parseQueryParams = function (qs) {
-    if (qs.charAt(0) === '?') {
-        qs.substr(1);
+    if (qs[0] === '?') {
+        qs = qs.substr(1);
     }
     const ret = {};
     qs.split('&').forEach(pair => {
