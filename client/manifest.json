@@ -20,5 +20,5 @@
         "persistent": false
     },
 
-    "permissions": ["declarativeContent", "http://warfish.net/*", "https://wf-utils.chadshost.xyz/*"]
+    "permissions": ["declarativeContent", "http://warfish.net/*", "https://wf-utils.chadshost.xyz/*", "http://localhost:4000/graph"]
 }
