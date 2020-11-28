@@ -4,4 +4,4 @@ VOLUME [ "/storage" ]
 COPY server /
 RUN yarn --cwd /server
 
-CMD [ "node", "/server"" ]
+CMD [ "node", "/server" ]
