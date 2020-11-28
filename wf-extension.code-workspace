@@ -4,5 +4,44 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cSpell.words": [
+			"adie",
+			"afdie",
+			"allowabandon",
+			"baoplay",
+			"boardid",
+			"cardscale",
+			"cardsetstraded",
+			"cids",
+			"circlemode",
+			"colorid",
+			"ddie",
+			"dfdie",
+			"dispcnames",
+			"fillednumbers",
+			"fillmode",
+			"graphiql",
+			"isturn",
+			"keeppossession",
+			"nextcardsworth",
+			"numattacks",
+			"numdiscard",
+			"numreserves",
+			"numterritories",
+			"numtransfers",
+			"pretransfer",
+			"profileid",
+			"returntoattack",
+			"returntoplace",
+			"subrequest",
+			"teamgame",
+			"teamid",
+			"teamplaceunits",
+			"teamtransfer",
+			"textx",
+			"texty",
+			"warfish"
+		]
+	}
 }
