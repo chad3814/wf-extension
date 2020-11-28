@@ -72,7 +72,8 @@ const sendHistoryMutation = `mutation SendHistory($game_id: Int!, $user_id: Stri
 }`;
 
 const makeGraphqlQuery = async function (query, variables) {
-    const url = 'http://localhost:4000/graph';
+    //const url = 'http://localhost:4000/graph';
+    const url = 'https://wf-utils.chadshost.xyz/graph';
     const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
