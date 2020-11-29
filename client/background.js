@@ -169,6 +169,13 @@ const sendHistory = async function (game_id) {
     _has_histories.set(game_id, data.sendHistory);
 };
 
+window.sendHistory = sendHistory;
+window.hasHistory = hasHistory;
+window.getHistory = getHistory;
+window.getRules = getRules;
+window.getFinishedGameIds = getFinishedGameIds;
+window.getUserId = getUserId;
+
 chrome.runtime.onInstalled.addListener(function() {
     // Replace all rules ...
     chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
@@ -188,10 +195,4 @@ chrome.runtime.onInstalled.addListener(function() {
         }
       ]);
     });
-    window.sendHistory = sendHistory;
-    window.hasHistory = hasHistory;
-    window.getHistory = getHistory;
-    window.getRules = getRules;
-    window.getFinishedGameIds = getFinishedGameIds;
-    window.getUserId = getUserId;
   });
