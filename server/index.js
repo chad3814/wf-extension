@@ -222,13 +222,25 @@ app.get('/:game_id', async (req, res, next) => {
     root.listHistoriesForGameId({game_id}),
     root.getGameData({game_id}),
   ]);
-  const title = `Game Id: ${game_id}`;
-  const has_data = `Has Data: ${data ? 'Yes' : 'No'}`;
+  const title = `Game Id: <a href='http://warfish.net/war/play/game?gid=${game_id}'>${game_id}</a/>`;
+  const has_data = `Has Data: ${data ? 'Yes' : 'No - <button onclick="() => makeGraphqlQuery(fetch_data_mutation, {game_id:' + game_id + '})">fetch</button>'}`;
   const complete = `${is_game_complete ? 'Game is ready to render' : 'Game is not ready to render'}`;
   const list = histories.map(p => `<li>${p}</li>`);
   return res.end(`<html>
   <head>
-    <title>${title}</title>
+    <title>Game Id: ${game_id}</title>
+    <script>
+    const makeGraphqlQuery = async function (query, variables) {
+      const url = 'https://wf-utils.chadshost.xyz/graph';
+      const headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+      };
+      const body = JSON.stringify({query, variables});
+      return fetch(url, {headers, body, method: 'POST'}).then(r => r.json());
+    };
+    const fetch_data_mutation = 'mutation { fetchData(game_id: Int!): Boolean! }';
+    </script>
   </head>
   <body>
     <h1>${title}</h1>
@@ -247,6 +259,7 @@ app.get('/', async (req, res, next) => {
     <title>wf-utils</title>
   </head>
   <body>
+    <h3><a href='/graph'>graph</a></h3>
     <ul>${list.join('')}</ul>
   </body>
 </html>`);
