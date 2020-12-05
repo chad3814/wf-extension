@@ -136,12 +136,12 @@ const getData = async function (game_id, min_units, territories_per_unit) {
         data.rules.allow_return_to_attack = raw_details._content.rules.returntoattack === '1';
     
         if (raw_details._content.rules.numattacks === '-1') {
-            data.rules.attack_limit_per_turn = 'unlimited';
+            data.rules.attack_limit_per_turn = Number.POSITIVE_INFINITY;
         } else {
             data.rules.attack_limit_per_turn = parseInt(raw_details._content.rules.numattacks, 10);
         }
         if (raw_details._content.rules.numtransfers === '-1') {
-            data.rules.transfer_limit_per_turn = 'unlimited';
+            data.rules.transfer_limit_per_turn = Number.POSITIVE_INFINITY;
         } else {
             data.rules.transfer_limit_per_turn = parseInt(raw_details._content.rules.numtransfers, 10);
         }
