@@ -179,8 +179,9 @@ const root = {
   },
   getGameData: async ({game_id}) => {
     try {
-      return require(`./storage/${game_id}/data.json`);
+      return require(`../storage/${game_id}/data.json`);
     } catch (err) {
+      console.log('require error:', err);
       return null;
     }
   },
@@ -225,6 +226,7 @@ app.get('/:game_id', async (req, res, next) => {
     root.listHistoriesForGameId({game_id}),
     root.getGameData({game_id}),
   ]);
+
   const title = `Game Id: <a href='http://warfish.net/war/play/game?gid=${game_id}'>${game_id}</a/>`;
   const has_data = `Has Data: ${data ? 'Yes' : 'No - <button onclick="makeGraphqlQuery(fetch_data_mutation, {game_id:' + game_id + '})">fetch</button>'}`;
   const complete = `${is_game_complete ? 'Game is ready to render' : 'Game is not ready to render'}`;
