@@ -245,7 +245,7 @@ app.get('/:game_id', async (req, res, next) => {
       const body = JSON.stringify({query, variables});
       return fetch(url, {headers, body, method: 'POST'}).then(r => r.json());
     };
-    const fetch_data_mutation = 'mutation { fetchData(game_id: Int!): Boolean! }';
+    const fetch_data_mutation = 'mutation FetchData($game_id: Int!) {fetchData(game_id: $game_id)}';
     </script>
   </head>
   <body>
