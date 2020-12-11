@@ -217,13 +217,16 @@ app.use('/graph', graphqlHTTP({
 }));
 app.get('/:game_id', async (req, res, next) => {
   const game_id = parseInt(req.params.game_id, 10);
+  if (Number.isNaN(game_id)) {
+    return res.status(404).end();
+  }
   const [is_game_complete, histories, data] = await Promise.all([
     root.isGameComplete({game_id}),
     root.listHistoriesForGameId({game_id}),
     root.getGameData({game_id}),
   ]);
   const title = `Game Id: <a href='http://warfish.net/war/play/game?gid=${game_id}'>${game_id}</a/>`;
-  const has_data = `Has Data: ${data ? 'Yes' : 'No - <button onclick="() => makeGraphqlQuery(fetch_data_mutation, {game_id:' + game_id + '})">fetch</button>'}`;
+  const has_data = `Has Data: ${data ? 'Yes' : 'No - <button onclick="makeGraphqlQuery(fetch_data_mutation, {game_id:' + game_id + '})">fetch</button>'}`;
   const complete = `${is_game_complete ? 'Game is ready to render' : 'Game is not ready to render'}`;
   const list = histories.map(p => `<li>${p}</li>`);
   return res.end(`<html>
@@ -231,6 +234,7 @@ app.get('/:game_id', async (req, res, next) => {
     <title>Game Id: ${game_id}</title>
     <script>
     const makeGraphqlQuery = async function (query, variables) {
+      console.log('graphql:', query, variables);
       const url = 'https://wf-utils.chadshost.xyz/graph';
       const headers = {
           'Content-Type': 'application/json',
