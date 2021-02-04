@@ -146,8 +146,8 @@ const getData = async function (game_id, min_units, territories_per_unit) {
             data.rules.transfer_limit_per_turn = parseInt(raw_details._content.rules.numtransfers, 10);
         }
     }
-    data.rules.attacker_die = 'd' + raw_details._content.rules.adie;
-    data.rules.defender_die = 'd' + raw_details._content.rules.ddie;
+    data.rules.attacker_die_sides = parseInt(raw_details._content.rules.adie, 10);
+    data.rules.defender_die_sides = parseInt(raw_details._content.rules.ddie, 10);
     if (raw_details._content.rules.numreserves !== '0') {
         data.rules.can_keep_in_reserve = parseInt(raw_details._content.rules.numreserves, 10);
     }
