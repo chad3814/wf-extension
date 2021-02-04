@@ -106,6 +106,7 @@ const schema = buildSchema(`
   }
   type GameData {
     game_id: Int!
+    game_title: String
     cards: Cards!
     players: [Player!]!
     rules: Rules
@@ -115,6 +116,7 @@ const schema = buildSchema(`
     hasHistory(game_id: Int!, user_id: String!): Boolean!
     listGameIds: [Int!]
     listHistoriesForGameId(game_id: Int!): [String!]
+    listMissingHistoriesForGameId(game_id: Int!): [String!]
     isGameComplete(game_id: Int!): Boolean!
     hasGameData(game_id: Int!): Boolean!
     getGameData(game_id: Int!): GameData
@@ -157,6 +159,19 @@ const root = {
       }
     }
     return user_ids;
+  },
+  listMissingHistoriesForGameId: async ({game_id}) => {
+    const game_data = await root.getGameData({game_id});
+    if (!game_data) {
+      return null;
+    }
+    const missing = [];
+    for (const player of game_data.players) {
+      if (!await root.hasHistory({game_id, user_id: player.profile_id})) {
+        missing.push(player.profile_id);
+      }
+    }
+    return missing;
   },
   isGameComplete: async ({game_id}) => {
     let game_data;
@@ -221,23 +236,26 @@ app.get('/:game_id', async (req, res, next) => {
   if (Number.isNaN(game_id)) {
     return res.status(404).end();
   }
-  const [is_game_complete, histories, data] = await Promise.all([
+  const [is_game_complete, histories, missing, data] = await Promise.all([
     root.isGameComplete({game_id}),
     root.listHistoriesForGameId({game_id}),
+    root.listMissingHistoriesForGameId({game_id}),
     root.getGameData({game_id}),
   ]);
 
-  const title = `Game Id: <a href='http://warfish.net/war/play/game?gid=${game_id}'>${game_id}</a/>`;
-  const has_data = `Has Data: ${data ? 'Yes' : 'No - <button onclick="makeGraphqlQuery(fetch_data_mutation, {game_id:' + game_id + '})">fetch</button>'}`;
+  const game_title = data?.game_title ?? '';
+  const title = `Game Id: <a href='http://warfish.net/war/play/game?gid=${game_id}'>${game_id}</a/> ${game_title}`;
+  const has_data = `Has Data: ${data ? 'Yes - <button onclick="fetchData(' + game_id + ')">update</button>' : 'No - <button onclick="fetchData(' + game_id + ')">fetch</button>'}`;
   const complete = `${is_game_complete ? 'Game is ready to render' : 'Game is not ready to render'}`;
-  const list = histories.map(p => `<li>${p}</li>`);
+  const list = histories?.map(p => `<li>${p}</li>`);
+  const missing_list = missing?.map(p => `<li>${p}</li>`);
   return res.end(`<html>
   <head>
     <title>Game Id: ${game_id}</title>
     <script>
     const makeGraphqlQuery = async function (query, variables) {
       console.log('graphql:', query, variables);
-      const url = 'https://wf-utils.chadshost.xyz/graph';
+      const url = '/graph';
       const headers = {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -246,14 +264,21 @@ app.get('/:game_id', async (req, res, next) => {
       return fetch(url, {headers, body, method: 'POST'}).then(r => r.json());
     };
     const fetch_data_mutation = 'mutation FetchData($game_id: Int!) {fetchData(game_id: $game_id)}';
+    const fetchData = async function (game_id) {
+      const data = await makeGraphqlQuery(fetch_data_mutation, {game_id});
+      window.location.reload();
+    }
     </script>
   </head>
   <body>
+    <h4><a href='/graph'>graph</a>&nbsp;|&nbsp;<a href='/'>list</a></h4>
     <h1>${title}</h1>
     <h2>${complete}</h2>
     <h2>${has_data}</h2>
     <h3>Have histories for:</h3>
-    <ul>${list.join('')}</ul>
+    <ul>${list?.join('')}</ul>
+    <h3>Missing Histories for:</h3>
+    <ul>${missing_list?.join('')}</ul>
   </body>
 </html>`);
 });

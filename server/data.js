@@ -4,6 +4,9 @@ const URLSearchParams = require('url').URLSearchParams;
 
 const { fstat, promises: fs } = require('fs');
 const fetch = require('node-fetch');
+const { Parser } = require('htmlparser2');
+const { DomHandler } = require('domhandler');
+const {selectAll: $$, selectOne: $} = require('css-select');
 
 const data_qs = [
     {
@@ -33,7 +36,23 @@ const findSeat =  function (data, seat_id) {
     return data.players[index];
 };
 
-const getData = async function (game_id, min_units, territories_per_unit) {
+const parseRulesPage = async function (game_id) {
+    const headers = {};
+    if (process.env.hasOwnProperty('SESSID')) {
+        headers.Cookie = `SESSID=${process.env.SESSID}`;
+    }
+    const url = `http://warfish.net/war/play/gamedetails?gid=${game_id}&t=r`;
+    const html = await fetch(url, {headers}).then(r => r.text());
+    const dom = new DomHandler();
+    const parser = new Parser(dom);
+    parser.end(html);
+    const game_title = $('center td b', dom.root).children[0].data.trim();
+    const min_units = parseInt($$('td nobr', dom.root)[55].children[0].data, 10);
+    const territories_per_unit = parseInt($$('td nobr', dom.root)[53].children[0].data, 10);
+    return {game_title, min_units, territories_per_unit};
+};
+
+const getData = async function (game_id) {
     const promises = data_qs.map(obj => {
         const qs = Object.assign({}, obj, {_format: 'json', gid: game_id});
         const url = base_url + '?' + (new URLSearchParams(qs));
@@ -43,10 +62,19 @@ const getData = async function (game_id, min_units, territories_per_unit) {
         }
         return fetch(url, {headers});
     });
+    let game_title = '';
+    let min_units = 0;
+    let territories_per_unit = Math.POSITIVE_INFINITY;
+    if (process.env.hasOwnProperty('SESSID')) {
+        const rules_page = await parseRulesPage(game_id);
+        game_title = rules_page.game_title;
+        min_units = rules_page.min_units;
+        territories_per_unit = rules_page.territories_per_unit;
+    }
     const [res_details, res_state] = await Promise.all(promises);
     const raw_details = await res_details.json();
     const raw_state = await res_state.json();
-    const data = {game_id};
+    const data = {game_id, game_title};
     data.cards = {
         sets_traded: parseInt(raw_state._content.cards.cardsetstraded, 10),
         cards_in_discard_pile: parseInt(raw_state._content.cards.numdiscard, 10),
