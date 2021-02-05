@@ -3,6 +3,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+const bodyParser = require('body-parser');
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
@@ -226,6 +227,7 @@ const root = {
 };
  
 const app = express();
+app.use('/graph', bodyParser.json({limit: '1mb'}));
 app.use('/graph', graphqlHTTP({
   schema: schema,
   rootValue: root,

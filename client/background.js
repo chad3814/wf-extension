@@ -84,7 +84,7 @@ const makeGraphqlQuery = async function (query, variables) {
 
 const getQueryArg = function (qs, arg) {
     const params = parseQueryParams(qs);
-    return qs[arg];
+    return params[arg];
 };
 const hist_num_date_time_re = /^(?<hist_id>\d+) (?<ts>\d\d\/\d\d \d\d:\d\d:\d\d) (?<other>--- fog ---|Game)?/;
 const _histories = new Map();
@@ -102,6 +102,8 @@ const getHistory = async function (game_id, start, progress_cb = (done, total) =
     const total = parseInt(doc.body.querySelector('center center').firstChild.textContent.match(/\d+/)[0], 10);
     const nodes = doc.body.querySelectorAll('table table div nobr');
     const history = [];
+    let obj;
+    console.log('nodes.length:', nodes.length);
     for (const node of nodes) {
         console.log('sending progress:', start + history.length, total);
         progress_cb(start + history.length, total);
@@ -110,7 +112,7 @@ const getHistory = async function (game_id, start, progress_cb = (done, total) =
         const history_id = parseInt(match.groups.hist_id, 10);
         const date = new Date(match.groups.ts);
         date.setFullYear(2020);
-        const obj = {
+        obj = {
             history_id,
             ts: date.valueOf(),
         };
@@ -120,10 +122,11 @@ const getHistory = async function (game_id, start, progress_cb = (done, total) =
         }
         obj.player = node.childNodes[1].text;
         if (node.childNodes[1].search) {
+            console.log('seat url', node.childNodes[1].search, getQueryArg(node.childNodes[1].search, 'seat'));
             obj.seat_id = parseInt(getQueryArg(node.childNodes[1].search, 'seat'), 10);
             obj.action = node.childNodes[3].innerText;
         }
-        //console.log(obj);
+        console.log(obj);
         let rest_index = 4;
         if (obj.action === 'attacks' || obj.action === 'eliminates' || obj.action === 'captures') {
             if (node.childNodes[4].data.startsWith(' Neutral')) {
@@ -143,11 +146,13 @@ const getHistory = async function (game_id, start, progress_cb = (done, total) =
 
     if (history.length === 25) {
         const subrequest = await getHistory(game_id, start + 25, progress_cb);
-        //console.log('subrequest:', subrequest);
-        return history.concat(subrequest);
+        console.log('subrequest:', subrequest);
+        const h = history.concat(subrequest);
+        _histories.set(game_id, h);
+        return h;
     }
     progress_cb(total, total);
-    _histories.set(game_id, history);
+    console.log('last object:', obj);
     return history;
 };
 
@@ -156,8 +161,9 @@ const hasHistory = async function (game_id) {
     if (_has_histories.has(game_id)) {
         return _has_histories.get(game_id);
     }
-    const {data} = await makeGraphqlQuery(hasHistoryQuery, {game_id, user_id});
-    _has_histories.set(game_id, data.hasHistory);
+    const res = await makeGraphqlQuery(hasHistoryQuery, {game_id, user_id});
+    console.log('hasHistory res:', res);
+    _has_histories.set(game_id, res.data.hasHistory);
     return _has_histories.get(game_id);
 }
 const sendHistory = async function (game_id) {
